@@ -247,7 +247,7 @@ class ImportProducts extends \WP_CLI_Command
             }
 
             foreach ($records as $offset => $record){
-                $record = apply_filters('wwc-prod-csv-import\pre_import\alter_record',$record);
+                $record = apply_filters('wwc-prod-csv-import\pre_import\alter_record',$record,$this);
                 $this->handleRecord($record);
                 if(!$this->verbose){
                     if($progress instanceof Bar){
