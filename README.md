@@ -1,4 +1,4 @@
-#Waga WooCommerce CSV Cli Importer
+# Waga WooCommerce CSV Cli Importer
 
 This project is in a early alpha stage.
 
