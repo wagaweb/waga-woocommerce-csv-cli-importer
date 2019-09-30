@@ -62,4 +62,6 @@ if ( ! class_exists( 'WP_CLI' ) ) {
     return;
 }
 
+require_once '../vendor/autoload.php';
+
 \WP_CLI::add_command( 'wwc-prod-csv-import', new ImportProducts() );
