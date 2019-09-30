@@ -247,8 +247,15 @@ class ImportProducts extends \WP_CLI_Command
             }
 
             foreach ($records as $offset => $record){
+                /*
+                 * Alter the record before processing. Return FALSE to skip the record.
+                 */
                 $record = apply_filters('wwc-prod-csv-import\pre_import\alter_record',$record,$this);
-                $this->handleRecord($record);
+                if($record === false || (!\is_array($record))){
+                    $this->info('- Record at offset: '.$offset.' skipped');
+                }else{
+                    $this->handleRecord($record);
+                }
                 if(!$this->verbose){
                     if($progress instanceof Bar){
                         $this->writePercentageOfCompletionInLockFile('running',$progress->percent());
