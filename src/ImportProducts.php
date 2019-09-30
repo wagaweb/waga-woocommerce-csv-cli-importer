@@ -222,7 +222,7 @@ class ImportProducts extends \WP_CLI_Command
         $this->info('Importing: '.$filePath);
 
         try{
-            do_action('wwc-prod-csv-import\pre_import');
+            do_action('wwc-prod-csv-import\pre_import',$filePath,$this);
             $csv = Reader::createFromPath($filePath,'r');
             $csv->setDelimiter(';');
             $csv->setHeaderOffset(0);
@@ -247,6 +247,7 @@ class ImportProducts extends \WP_CLI_Command
             }
 
             foreach ($records as $offset => $record){
+                $record = apply_filters('wwc-prod-csv-import\pre_import\alter_record',$record);
                 $this->handleRecord($record);
                 if(!$this->verbose){
                     if($progress instanceof Bar){
