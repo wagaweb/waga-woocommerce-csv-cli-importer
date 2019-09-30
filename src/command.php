@@ -63,7 +63,7 @@ if ( ! class_exists( 'WP_CLI' ) ) {
 }
 
 if(!defined('WWCCSV_USE_OWN_AUTOLOADER') || WWCCSV_USE_OWN_AUTOLOADER){
-    $autoloadPath = defined('WWCCSV_BASEDIR') ? WWCCSV_BASEDIR : getcwd();
+    $autoloadPath = defined('WWCCSV_AUTOLOADER_BASEDIR') ? WWCCSV_AUTOLOADER_BASEDIR : getcwd();
     require_once trailingslashit($autoloadPath).'vendor/autoload.php';
 }
 
