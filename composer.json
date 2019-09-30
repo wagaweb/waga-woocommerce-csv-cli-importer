@@ -1,0 +1,22 @@
+{
+  "name": "waga/waga-woocommerce-csv-importer",
+  "description": "Waga WooCommerce CSV Importer",
+  "type": "project",
+  "authors": [
+    {
+      "name": "Waga",
+      "email": "dev@waga.it"
+    }
+  ],
+  "minimum-stability": "dev",
+  "require": {
+    "league/csv": "^9.2",
+    "padraic/humbug_get_contents": "^1.1",
+    "monolog/monolog": "^1.24"
+  },
+  "autoload": {
+    "psr-4": {
+      "WWCCSVImporter\\": "src/"
+    }
+  }
+}
