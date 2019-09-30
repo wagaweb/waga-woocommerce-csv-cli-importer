@@ -771,7 +771,7 @@ class ImportProducts extends \WP_CLI_Command
     /**
      * @param string $message
      */
-    private function info(string $message)
+    public function info(string $message)
     {
         if($this->isVerbose()){
             \WP_CLI::log($message);
@@ -783,7 +783,7 @@ class ImportProducts extends \WP_CLI_Command
     /**
      * @param string $message
      */
-    private function log(string $message, $level = Logger::INFO)
+    public function log(string $message, $level = Logger::INFO)
     {
         if($this->mustSkipLog()){
             return;
@@ -794,7 +794,7 @@ class ImportProducts extends \WP_CLI_Command
     /**
      * @param string $message
      */
-    private function success(string $message)
+    public function success(string $message)
     {
         \WP_CLI::success($message);
     }
@@ -802,7 +802,7 @@ class ImportProducts extends \WP_CLI_Command
     /**
      * @param string $message
      */
-    private function error(string $message){
+    public function error(string $message){
         try{
             \WP_CLI::error($message);
         }catch(ExitException $e){
