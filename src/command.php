@@ -68,3 +68,5 @@ if(!defined('WWCCSV_USE_OWN_AUTOLOADER') || WWCCSV_USE_OWN_AUTOLOADER){
 }
 
 \WP_CLI::add_command( 'wwc-prod-csv-import', new ImportProducts() );
+
+\WP_CLI::add_command( 'wwc-prod-csv-check', new LogsChecker() );
