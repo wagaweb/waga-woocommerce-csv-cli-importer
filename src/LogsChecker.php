@@ -80,7 +80,7 @@ class LogsChecker extends \WP_CLI_Command
             $filePath = $inputFilePath;
         }else{
             //This is a relative path
-            $filePath = WP_CONTENT_DIR.'/'.$inputFilePath;
+            $filePath = WP_CONTENT_DIR.'/cli-logs/'.$inputFilePath;
         }
         $this->setFile($filePath);
     }
