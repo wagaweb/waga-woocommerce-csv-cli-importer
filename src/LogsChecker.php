@@ -24,7 +24,7 @@ class LogsChecker extends \WP_CLI_Command
     private $showUpdated;
 
     /**
-     * Import a well-formatted CSV file
+     * Parse import log files
      *
      * ## OPTIONS
      *
