@@ -803,6 +803,7 @@ class ImportProducts extends \WP_CLI_Command
      * @param string $message
      */
     public function error(string $message){
+        $this->clearLockFile();
         try{
             \WP_CLI::error($message);
         }catch(ExitException $e){
