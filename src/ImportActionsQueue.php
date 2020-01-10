@@ -262,8 +262,7 @@ class ImportActionsQueue
                 $this->addMainAction(new ProductQuantityAction($data,$productId,$this->isVerbose()));
                 //If the product is a variation, then enqueue an update of the parent product
                 if(\get_post_type($productId) === 'product_variation'){
-                    global $wpdb;
-                    $parentId = (int) $wpdb->get_var('SELECT post_parent FROM `'.$wpdb->posts.'` WHERE ID = '.$productId);
+                    $parentId = $this->getParentId($productId);
                     if($parentId !== 0){
                         $this->addAfterAction(new VariableProductStockStatusUpdateAction(null,$parentId,$this->isVerbose()));
                     }
@@ -273,14 +272,15 @@ class ImportActionsQueue
         if(preg_match('|meta:([a-zA-Z-_]+)|',$key,$matches)){
             if(isset($matches[1])){
                 $this->addMainAction(new ProductMetaUpdateAction($data,$productId,$this->isVerbose(),['meta_key' => $matches[1], 'meta_type' => $dataType]));
-                if($dataType === self::DATA_TYPE_PRICE){
+                if(\in_array($key,['meta:_regular_price','meta:_sale_price'])){
+                    //If we are updating a wc price, then adjust the _price accordingly
                     $this->addAfterAction(new ProductAdjustPriceMetaAction(null,$productId,$this->isVerbose()));
-                }
-                if(get_post_type($productId) === 'product_variation'){
-                    global $wpdb;
-                    $parentId = (int) $wpdb->get_var('SELECT post_parent FROM `'.$wpdb->posts.'` WHERE ID = '.$productId);
-                    if($parentId !== 0){
-                        $this->addAfterAction(new VariableProductAdjustPriceMetaAction(null,$parentId,$this->isVerbose(),[],99));
+                    if(get_post_type($productId) === 'product_variation'){
+                        //... and for the parent product also
+                        $parentId = $this->getParentId($productId);
+                        if($parentId !== 0){
+                            $this->addAfterAction(new VariableProductAdjustPriceMetaAction(null,$parentId,$this->isVerbose(),[],99));
+                        }
                     }
                 }
             }
@@ -329,5 +329,15 @@ class ImportActionsQueue
             self::DATA_TYPE_INT,
             self::DATA_TYPE_PRICE
         ];
+    }
+
+    /**
+     * @param $productId
+     * @return int
+     */
+    private function getParentId($productId): int{
+        global $wpdb;
+        $parentId = (int) $wpdb->get_var('SELECT post_parent FROM `'.$wpdb->posts.'` WHERE ID = '.$productId);
+        return $parentId;
     }
 }
