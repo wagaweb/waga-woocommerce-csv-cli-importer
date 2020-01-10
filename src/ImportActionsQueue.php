@@ -3,9 +3,11 @@
 namespace WWCCSVImporter;
 
 use WWCCSVImporter\action\AbstractAction;
+use WWCCSVImporter\action\ProductAdjustPriceMetaAction;
 use WWCCSVImporter\action\ProductMetaUpdateAction;
 use WWCCSVImporter\action\ProductQuantityAction;
 use WWCCSVImporter\action\ProductUpdateAction;
+use WWCCSVImporter\action\VariableProductAdjustPriceMetaAction;
 use WWCCSVImporter\action\VariableProductStockStatusUpdateAction;
 
 class ImportActionsQueue
@@ -127,7 +129,16 @@ class ImportActionsQueue
         if(!isset($this->mainActions)){
             return [];
         }
-        return $this->mainActions;
+        $actions = $this->mainActions;
+        if(count($actions) > 0){
+            uasort($actions,function(AbstractAction $a, AbstractAction $b){
+                if($a->getPriority() === $b->getPriority()){
+                    return 0;
+                }
+                return $a->getPriority() > $b->getPriority() ? 1 : -1;
+            });
+        }
+        return $actions;
     }
 
     /**
@@ -157,7 +168,16 @@ class ImportActionsQueue
         if(!isset($this->afterActions)){
             return [];
         }
-        return $this->afterActions;
+        $actions = $this->afterActions;
+        if(count($actions) > 0){
+            uasort($actions,function(AbstractAction $a, AbstractAction $b){
+                if($a->getPriority() === $b->getPriority()){
+                    return 0;
+                }
+                return $a->getPriority() > $b->getPriority() ? 1 : -1;
+            });
+        }
+        return $actions;
     }
 
     /**
@@ -253,6 +273,16 @@ class ImportActionsQueue
         if(preg_match('|meta:([a-zA-Z-_]+)|',$key,$matches)){
             if(isset($matches[1])){
                 $this->addMainAction(new ProductMetaUpdateAction($data,$productId,$this->isVerbose(),['meta_key' => $matches[1], 'meta_type' => $dataType]));
+                if($dataType === self::DATA_TYPE_PRICE){
+                    $this->addAfterAction(new ProductAdjustPriceMetaAction(null,$productId,$this->isVerbose()));
+                }
+                if(get_post_type($productId) === 'product_variation'){
+                    global $wpdb;
+                    $parentId = (int) $wpdb->get_var('SELECT post_parent FROM `'.$wpdb->posts.'` WHERE ID = '.$productId);
+                    if($parentId !== 0){
+                        $this->addAfterAction(new VariableProductAdjustPriceMetaAction(null,$parentId,$this->isVerbose(),[],99));
+                    }
+                }
             }
         }
     }

@@ -369,7 +369,7 @@ class ImportProducts extends \WP_CLI_Command
                 if(get_post_type($currentPostId) === 'product_variation'){
                     $parentId = (int) wp_get_post_parent_id($currentPostId);
                     if($parentId > 0){
-                        $this->currentQueue->addAfterAction(new ProductUpdateAction(null,$parentId,$this->isVerbose()));
+                        $this->currentQueue->addAfterAction(new ProductUpdateAction(null,$parentId,$this->isVerbose(),[],1000));
                     }
                 }
             }

@@ -37,6 +37,10 @@ abstract class AbstractAction implements ImportAction
      * @var @array
      */
     private $logData = [];
+    /**
+     * @var int
+     */
+    private $priority = 10;
 
     /**
      * AbstractAction constructor.
@@ -44,8 +48,9 @@ abstract class AbstractAction implements ImportAction
      * @param int $productId
      * @param bool $verbose
      * @param array $specificData
+     * @param int $priority
      */
-    public function __construct($data, int $productId, bool $verbose, array $specificData = [])
+    public function __construct($data, int $productId, bool $verbose, array $specificData = [], int $priority = 10)
     {
         $this->setData($data);
         $this->setProductId($productId);
@@ -53,6 +58,7 @@ abstract class AbstractAction implements ImportAction
         if(\is_array($specificData) && count($specificData) > 0){
             $this->setSpecificData($specificData);
         }
+        $this->setPriority($priority);
         $this->setId($this->generateId());
     }
 
@@ -88,6 +94,10 @@ abstract class AbstractAction implements ImportAction
         $id = get_called_class().'_'.$this->getProductId().'_'.$data;
         $hash = md5($id);
 
+        if(!empty($this->getSpecificData())){
+            $hash .= '_'.md5(json_encode($this->getSpecificData()));
+        }
+
         return $hash;
     }
 
@@ -112,6 +122,9 @@ abstract class AbstractAction implements ImportAction
      */
     public function getSpecificData(): array
     {
+        if(!$this->specificData){
+            return [];
+        }
         return $this->specificData;
     }
 
@@ -161,6 +174,22 @@ abstract class AbstractAction implements ImportAction
     public function setVerbose(bool $verbose): void
     {
         $this->verbose = $verbose;
+    }
+
+    /**
+     * @return int
+     */
+    public function getPriority(): int
+    {
+        return $this->priority;
+    }
+
+    /**
+     * @param int $priority
+     */
+    public function setPriority(int $priority): void
+    {
+        $this->priority = $priority;
     }
 
     /**
