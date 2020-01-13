@@ -60,6 +60,10 @@ class ImportProducts extends \WP_CLI_Command
      * @var string The lock file name
      */
     private $lockFileName;
+	/**
+	 * @var boolean
+	 */
+    private $bypassLockFile;
     /**
      * @var Logger
      */
@@ -91,6 +95,9 @@ class ImportProducts extends \WP_CLI_Command
      *
      * [--lockfile]
      * : A custom name for the lock file. Having a different lock file name, allows to perform concurrent operations.
+     *
+     * [--unlock]
+     * : Bypass lock file check
      *
      * ## EXAMPLES
      *
@@ -125,10 +132,14 @@ class ImportProducts extends \WP_CLI_Command
         }
 
         try{
-            if($this->isLocked()){
-                $this->error('An operation is already in progress. You could delete the lock file located at: '.$this->getLockFilePath().'  if this is an issue.');
-            }
+	        $this->setBypassLockFile(isset($assoc_args['unlock']) && $assoc_args['unlock']);
 
+            if($this->isLocked() && !$this->mustBypassLockFile()){
+                $this->error('An operation is already in progress. You could delete the lock file located at: '.$this->getLockFilePath().' or run the command with --unlock flag if this is an issue.',false);
+            }
+			if($this->isLocked()){
+				$this->clearLockFile();
+			}
             $this->createLockFile();
 
             if($this->mustLog()){
@@ -162,6 +173,8 @@ class ImportProducts extends \WP_CLI_Command
                 $this->setManifestFile($manifestFile);
                 $this->parseManifestFile();
             }
+
+
 
             if(isset($args[0])){
                 $this->handleFile($args[0]);
@@ -662,6 +675,20 @@ class ImportProducts extends \WP_CLI_Command
         return \is_file($lockFilePath);
     }
 
+	/**
+	 * @return bool
+	 */
+	public function mustBypassLockFile(): bool {
+		return $this->bypassLockFile;
+	}
+
+	/**
+	 * @param bool $bypassLockFile
+	 */
+	public function setBypassLockFile(bool $bypassLockFile): void {
+		$this->bypassLockFile = $bypassLockFile;
+	}
+
     /**
      * @param string $stage
      * @param float $percentage
@@ -799,11 +826,14 @@ class ImportProducts extends \WP_CLI_Command
         \WP_CLI::success($message);
     }
 
-    /**
-     * @param string $message
-     */
-    public function error(string $message){
-        $this->clearLockFile();
+	/**
+	 * @param string $message
+	 * @param bool $clearLock
+	 */
+    public function error(string $message, $clearLock = true){
+        if($clearLock){
+        	$this->clearLockFile();
+        }
         try{
             \WP_CLI::error($message);
         }catch(ExitException $e){
