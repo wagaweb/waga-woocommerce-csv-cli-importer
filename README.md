@@ -52,3 +52,5 @@ You can create _manifest file_, eg: `prices-import.json`, like that:
 To map the headers to the default counterparts.
 
 The `_types` field tells the script how to treat the data in the specified column. For now, only `price` is supported. `price` type will cast the data to float e store it in a optimal way for WooCommerce.
+
+To use the manifest file run: `wp --allow-root wwc-prod-csv-import /path/to/product-list.csv --manifest=/path/to/prices-import.json`.
