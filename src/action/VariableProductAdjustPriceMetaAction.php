@@ -7,54 +7,75 @@ class VariableProductAdjustPriceMetaAction extends AbstractAction{
     /**
      * @var float
      */
-    private $newPrice;
+    private $prices;
 
     public function perform()
     {
         global $wpdb;
 
-        $p = new \WC_Product_Variable($this->getProductId());
-        $this->newPrice = @$p->get_variation_price();
+        /*
+         * WooCommerce creates one or more _price during variations saving. One _price for every different variation price.
+         */
 
-        if($this->newPrice === null || $this->newPrice === '' || $this->newPrice === false){
+        $p = new \WC_Product_Variable($this->getProductId());
+        $prices = @$p->get_variation_prices();
+
+        if(!\is_array($prices['price']) || empty($prices['price'])){
             if($this->isVerbose()){
-                \WP_CLI::log('Error in adjusting _price of VARIABLE product #'.$this->getProductId().': get_variation_price() returned invalid value');
+                \WP_CLI::log('Error in adjusting _price of VARIABLE product #'.$this->getProductId().': get_variation_prices() returned invalid value');
             }
-            $this->addLogData('Error in adjusting _price of VARIABLE product #'.$this->getProductId().': get_variation_price() returned invalid value');
+            $this->addLogData('Error in adjusting _price of VARIABLE product #'.$this->getProductId().': get_variation_prices() returned invalid value');
             return;
         }
 
-        $existing = $wpdb->get_var($wpdb->prepare('SELECT meta_value FROM `'.$wpdb->postmeta.'` WHERE post_id = %d AND meta_key = "_price"',[$this->getProductId()]));
-        $r = $wpdb->update($wpdb->postmeta,[
-            'meta_value' => $this->newPrice
-        ],[
-            'post_id' => $this->getProductId(),
-            'meta_key' => '_price'
-        ]);
-        if(!$r && ($existing == $this->newPrice)){
-            $r = 1; //update() returns false if the new value is the same as the old value, but it is not an error
-        }
+        $this->prices = array_map(function($price){ return floatval($price); },array_unique($prices['price']));
 
-        if($this->isVerbose()){
-            if(!$r){
-                \WP_CLI::log('Error in adjusting _price of VARIABLE product #'.$this->getProductId().' to: '.$this->newPrice);
-                \WP_CLI::log('- Query: '.$wpdb->last_query);
-                \WP_CLI::log('- Error: '.$wpdb->last_error);
-            }else{
-                \WP_CLI::log('Adjusted _price of VARIABLE product #'.$this->getProductId().' to: '.$this->newPrice);
-            }
-        }
-        if(!$r){
-            $this->addLogData('Error in adjusting _price of VARIABLE product #'.$this->getProductId().' to: '.$this->newPrice);
-            $this->addLogData('- Query: '.$wpdb->last_query);
-            $this->addLogData('- Error: '.$wpdb->last_error);
-        }else{
-            $this->addLogData('Adjusted _price of VARIABLE product #'.$this->getProductId().' to: '.$this->newPrice);
+        //Remove existing prices
+	    $wpdb->query(
+	    	$wpdb->prepare('DELETE FROM `'.$wpdb->postmeta.'` WHERE post_id = %d AND meta_key = "_price"',[$this->getProductId()])
+	    );
+
+	    //Adding new prices
+        foreach ($this->prices as $price){
+	        $r = $wpdb->query(
+	        	$wpdb->prepare('INSERT INTO `'.$wpdb->postmeta.'` (post_id,meta_key,meta_value) VALUES (%d,"_price",%s)',[$this->getProductId(),$price])
+	        );
+	        if($this->isVerbose()){
+		        if(!$r){
+			        \WP_CLI::log('Error in adding _price of VARIABLE product #'.$this->getProductId().': '.$price);
+			        \WP_CLI::log('- Query: '.$wpdb->last_query);
+			        \WP_CLI::log('- Error: '.$wpdb->last_error);
+		        }else{
+			        \WP_CLI::log('Added _price of VARIABLE product #'.$this->getProductId().': '.$price);
+		        }
+	        }
+	        if(!$r){
+		        $this->addLogData('Error in adding _price of VARIABLE product #'.$this->getProductId().': '.$price);
+		        $this->addLogData('- Query: '.$wpdb->last_query);
+		        $this->addLogData('- Error: '.$wpdb->last_error);
+	        }else{
+		        $this->addLogData('Added _price of VARIABLE product #'.$this->getProductId().': '.$price);
+	        }
         }
     }
 
     public function pretend()
     {
-        \WP_CLI::log('Adjusted _price of VARIABLE product #'.$this->getProductId().' to: '.$this->newPrice);
+	    $p = new \WC_Product_Variable($this->getProductId());
+	    $prices = @$p->get_variation_prices();
+
+	    if(!\is_array($prices['price']) || empty($prices['price'])){
+		    if($this->isVerbose()){
+			    \WP_CLI::log('Error in adjusting _price of VARIABLE product #'.$this->getProductId().': get_variation_prices() returned invalid value');
+		    }
+		    $this->addLogData('Error in adjusting _price of VARIABLE product #'.$this->getProductId().': get_variation_prices() returned invalid value');
+		    return;
+	    }
+
+	    $this->prices = array_map(function($price){ return floatval($price); },array_unique($prices['price']));
+
+	    foreach ($this->prices as $price){
+		    \WP_CLI::log('Adding _price of VARIABLE product #'.$this->getProductId().': '.$price);
+	    }
     }
 }
