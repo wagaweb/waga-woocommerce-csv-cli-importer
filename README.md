@@ -13,7 +13,7 @@ The aim is to develop a cli tool that can read a CSV file and can alter all sort
 
 ## How to import data
 
-The script can import data from a CSV file. This file must have one product per row and a series of column with the data to update. The CSV headers (the first line) can be the default provided in the file `docs/standard_headers.md` or can be customized through a _manifest file_.
+The script can import data from a CSV file. This file must have one product per row and a series of column with the data to update. The CSV headers (the first line) can be the default ones provided in the file `docs/standard_headers.md` or can be customized through a _manifest file_.
 
 With a CSV (product-list.csv) formatted like that:
 
