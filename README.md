@@ -2,7 +2,7 @@
 
 This project is in a early alpha stage.
 
-The aim is to develop a cli tool that can read a CSV file and can alter all sort of WooCommerce product data (prices, stock quantities, meta data, ect..)
+The aim is to develop a cli tool that can read a CSV file and alter all sort of WooCommerce product data (prices, stock quantities, meta data, ect..) taking care of all related side-effect (eg: update the stock status of the variable product if all its variations are out of stock).  
 
 ## Getting started
 
