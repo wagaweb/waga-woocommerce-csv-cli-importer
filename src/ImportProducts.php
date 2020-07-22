@@ -134,12 +134,15 @@ class ImportProducts extends \WP_CLI_Command
         try{
 	        $this->setBypassLockFile(isset($assoc_args['unlock']) && $assoc_args['unlock']);
 
-            if($this->isLocked() && !$this->mustBypassLockFile()){
-                $this->error('An operation is already in progress. You could delete the lock file located at: '.$this->getLockFilePath().' or run the command with --unlock flag if this is an issue.',false);
+	        //Lock file logic
+            if($this->isLocked()){
+                if($this->isLockFileExpired() || $this->mustBypassLockFile()){
+                    $this->clearLockFile();
+                }else{
+                    $this->error('An operation is already in progress. You could delete the lock file located at: '.$this->getLockFilePath().' or run the command with --unlock flag if this is an issue.',false);
+                }
             }
-			if($this->isLocked()){
-				$this->clearLockFile();
-			}
+
             $this->createLockFile();
 
             if($this->mustLog()){
@@ -673,6 +676,20 @@ class ImportProducts extends \WP_CLI_Command
     {
         $lockFilePath = $this->getLockFilePath();
         return \is_file($lockFilePath);
+    }
+
+    /**
+     * @return bool
+     */
+    private function isLockFileExpired(): bool
+    {
+        $lockFilePath = $this->getLockFilePath();
+        if(\is_file($lockFilePath)){
+            $lockFileAge = filemtime($lockFilePath);
+            $now = time();
+            return $now - $lockFileAge >= (60 * 60 * 24); //1 day
+        }
+        return false;
     }
 
 	/**
