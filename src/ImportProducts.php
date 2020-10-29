@@ -527,7 +527,7 @@ class ImportProducts extends \WP_CLI_Command
     /**
      * @return string
      */
-    private function getFile(): string
+    public function getFile(): string
     {
         return $this->file;
     }
