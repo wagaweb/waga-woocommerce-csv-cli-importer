@@ -373,6 +373,10 @@ class ImportProducts extends \WP_CLI_Command
                 continue;
             }
 
+            if($currentPostId === null){
+                continue; //We haven't reach the "SKU" column yet
+            }
+
             if(isset($dataType)){
                 $this->currentQueue->addActionByKey($key,$value,$currentPostId,$dataType);
             }else{
@@ -391,8 +395,13 @@ class ImportProducts extends \WP_CLI_Command
             }
         }
 
-        if(!$currentPostId){
+        if(!$currentPostId && $currentSku !== null){
             $this->info('Product with SKU '.$currentSku.' not found. Skipping.');
+            return false;
+        }
+
+        if(!$currentPostId && !$currentSku){
+            $this->info('SKU field not found. Skipping.');
             return false;
         }
 
