@@ -27,8 +27,8 @@ class ProductMetaUpdateAction extends AbstractAction
             $data = (string) $data;
         }
 
-        $existing = $wpdb->get_var($wpdb->prepare('SELECT meta_value FROM `'.$wpdb->postmeta.'` WHERE post_id = %d AND meta_key = %s',[$this->getProductId(),$metaKey]));
-        if(!$existing || $existing === ''){
+        $existing = $wpdb->get_results($wpdb->prepare('SELECT meta_value FROM `'.$wpdb->postmeta.'` WHERE post_id = %d AND meta_key = %s',[$this->getProductId(),$metaKey]));
+        if( (\is_array($existing) && empty($existing)) || !\is_array($existing) ){
             $changes = ['creating','Created'];
             $r = $wpdb->insert($wpdb->postmeta,[
                 'post_id' => $this->getProductId(),
