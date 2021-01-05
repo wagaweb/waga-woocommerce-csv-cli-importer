@@ -44,9 +44,9 @@ class LogsChecker extends \WP_CLI_Command
      *
      *     wp wwc-prod-csv-check wwcsvimporter-logs-2019-10-02_10-03.log
      *
-     *     wp wwc-prod-csv-import wwcsvimporter-logs-2019-10-02_10-03.log --skipped
+     *     wp wwc-prod-csv-check wwcsvimporter-logs-2019-10-02_10-03.log ---not-found
      *
-     *     wp wwc-prod-csv-import wwcsvimporter-logs-2019-10-02_10-03.log --skipped --out=file
+     *     wp wwc-prod-csv-check wwcsvimporter-logs-2019-10-02_10-03.log --not-found --out=/path/to/file
      *
      * @when after_wp_load
      *
