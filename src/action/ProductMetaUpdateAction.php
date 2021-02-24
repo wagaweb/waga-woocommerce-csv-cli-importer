@@ -40,6 +40,7 @@ class ProductMetaUpdateAction extends AbstractAction
                 $dataFormat
             ]);
         }else{
+            $existingValue = $existing[0]->meta_value;
             $changes = ['updating','Updated'];
             $r = $wpdb->update($wpdb->postmeta,[
                 'meta_value' => $data
@@ -47,7 +48,7 @@ class ProductMetaUpdateAction extends AbstractAction
                 'post_id' => $this->getProductId(),
                 'meta_key' => $metaKey
             ]);
-            if(!$r && ($existing == $data)){
+            if(!$r && ($existingValue == $data)){
                 $r = 1; //update() returns false if the new value is the same as the old value, but it is not an error
             }
         }
