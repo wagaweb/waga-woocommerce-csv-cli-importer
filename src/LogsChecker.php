@@ -98,9 +98,9 @@ class LogsChecker extends \WP_CLI_Command
         $h = @fopen($filePath,'r');
         if($h){
             while( ($line = fgets($h)) !== false ){
-                if(preg_match('/with SKU ([a-zA-Z0-9]+) not found/',$line,$matches)){
+                if(preg_match('/with SKU ([a-zA-Z0-9_]+) not found/',$line,$matches)){
                     $notFoundProducts[] = $matches[1];
-                }elseif(preg_match('/Product with SKU: ([a-zA-Z0-9]+) and ID: #([0-9]+) updated successfully/',$line,$matches)){
+                }elseif(preg_match('/Product with SKU: ([a-zA-Z0-9_]+) and ID: #([0-9]+) updated successfully/',$line,$matches)){
                     $updatedProducts[] = $matches[1];
                 }
             }
