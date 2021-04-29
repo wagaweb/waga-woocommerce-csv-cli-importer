@@ -14,15 +14,18 @@ class WCHelper
 	 * @return array|object|null
 	 */
 	static function getProductVarations($parentId, $returnType = self::RETURN_TYPE_ID){
-		global $wpdb;
-		$sql = 'SELECT ID FROM `'.$wpdb->posts.'` WHERE post_parent = %d AND post_type = %s';
-		$r = $wpdb->get_results($wpdb->prepare($sql,[$wpdb->posts,$parentId,'product_variation']));
-		if(\is_array($r) && !empty($r)){
-			if($returnType === self::RETURN_TYPE_OBJ){
-				return array_map(function($id){ wc_get_product($id); },$r);
-			}
-			return $r;
-		}
-		return [];
+        global $wpdb;
+        $sql = 'SELECT ID FROM `'.$wpdb->posts.'` WHERE post_parent = %d AND post_type = %s';
+        $sql = $wpdb->prepare($sql,[$parentId,'product_variation']);
+        $r = $wpdb->get_results($sql,ARRAY_A);
+        if(\is_array($r) && !empty($r)){
+            $r = wp_list_pluck($r,'ID');
+            $r = array_map('absint', $r);
+            if($returnType === 'object'){
+                return array_map(static function($id){ return wc_get_product($id); },$r);
+            }
+            return $r;
+        }
+        return [];
 	}
 }
