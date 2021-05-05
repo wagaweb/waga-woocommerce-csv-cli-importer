@@ -22,7 +22,7 @@ use WWCCSVImporter\action\ProductUpdateAction;
  * dovrebbe essere possibile fornire da linea di comando un file di mapping tra gli header del csv e gli
  * header standard.
  */
-class ImportProducts extends \WP_CLI_Command
+class ImportProducts
 {
     /**
      * @var bool
@@ -60,6 +60,18 @@ class ImportProducts extends \WP_CLI_Command
      * @var string The lock file name
      */
     private $lockFileName;
+    /**
+     * @var string
+     */
+    private $logsFileName;
+    /**
+     * @var string
+     */
+    private $logsDirName;
+    /**
+     * @var boolean
+     */
+    private $useDateAndTimeInLogsFileSuffix = true;
 	/**
 	 * @var boolean
 	 */
@@ -95,6 +107,15 @@ class ImportProducts extends \WP_CLI_Command
      *
      * [--lockfile]
      * : A custom name for the lock file. Having a different lock file name, allows to perform concurrent operations.
+     *
+     * [--logs-filename]
+     * : The logs filename prefix
+     *
+     * [--logs-dirname]
+     * : The logs dirname
+     *
+     * [--use-date-for-logs]
+     * : Time will NOT be used as log filename suffix in addiction to date
      *
      * [--unlock]
      * : Bypass lock file check
@@ -146,6 +167,15 @@ class ImportProducts extends \WP_CLI_Command
             $this->createLockFile();
 
             if($this->mustLog()){
+                if(isset($assoc_args['logs-dirname'])){
+                    $this->logsDirName = trim($assoc_args['logs-dirname']);
+                }
+                if(isset($assoc_args['logs-filename'])){
+                    $this->logsFileName = trim($assoc_args['logs-filename']);
+                }
+                if(isset($assoc_args['use-date-for-logs'])){
+                    $this->useDateAndTimeInLogsFileSuffix = false;
+                }
                 $this->initLogFile();
                 $this->logger = new Logger('import');
                 $this->logger->pushHandler(new StreamHandler($this->getLogfile()), Logger::INFO);
@@ -436,11 +466,15 @@ class ImportProducts extends \WP_CLI_Command
         }
 
         //Generating log file for the session
-        $logFile = $this->getLogsDir().'/wwcsvimporter-logs-'.(new \DateTime())->format('Y-m-d_H-i').'.log';
+        $prefix = isset($this->logsFileName) ? $this->logsFileName.'-' : 'wwcsvimporter-logs-';
+        $suffix = $this->useDateAndTimeInLogsFileSuffix ? (new \DateTime())->format('Y-m-d_H-i') : (new \DateTime())->format('Y-m-d');
+        $logFile = $this->getLogsDir().'/'.$prefix.$suffix.'.log';
         $this->setLogfile($logFile);
         try{
             $fs = new Filesystem();
-            $fs->touch($this->getLogfile());
+            if(!$fs->exists($logFile)){
+                $fs->touch($this->getLogfile());
+            }
             if($this->verbose) \WP_CLI::log('Using log file: '.$logFile);
         }catch (\Exception $e){
             if($this->verbose) \WP_CLI::log('Unable to create the log file: '.$logFile);
@@ -607,9 +641,19 @@ class ImportProducts extends \WP_CLI_Command
     /**
      * @return string
      */
-    private function getLogsDir(): string
+    private function getBaseLogsDir(): string
     {
         return WP_CONTENT_DIR.'/cli-logs';
+    }
+
+    /**
+     * @return string
+     */
+    private function getLogsDir(): string
+    {
+        $baseDir = $this->getBaseLogsDir();
+        $currentDir = $this->logsDirName ?? '';
+        return $baseDir.'/'.$currentDir;
     }
 
     /*
