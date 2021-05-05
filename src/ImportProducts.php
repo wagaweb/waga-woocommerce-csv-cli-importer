@@ -72,6 +72,10 @@ class ImportProducts
      * @var boolean
      */
     private $useDateAndTimeInLogsFileSuffix = true;
+    /**
+     * @var string
+     */
+    private $downloadedFilenamePrefix;
 	/**
 	 * @var boolean
 	 */
@@ -117,6 +121,9 @@ class ImportProducts
      * [--use-date-for-logs]
      * : Time will NOT be used as log filename suffix in addiction to date
      *
+     * [--downloaded-filename-prefix]
+     * : The prefix to assign to the downloaded file, if <file> is a remote file
+     *
      * [--unlock]
      * : Bypass lock file check
      *
@@ -150,6 +157,10 @@ class ImportProducts
         }else{
             $lockFileName = 'wwc-prod-csv-import.lock';
             $this->setLockFileName($lockFileName);
+        }
+
+        if(isset($assoc_args['downloaded-filename-prefix'])){
+            $this->downloadedFilenamePrefix = trim($assoc_args['downloaded-filename-prefix']);
         }
 
         try{
@@ -240,7 +251,8 @@ class ImportProducts
             if(!$contents){
                 $this->error('Unable to download the file from: '.$remoteUri);
             }
-            $fileName = (new \DateTime())->format('Y-m-d_Hi').'_import.csv';
+            $prefix = $this->downloadedFilenamePrefix.'-' ?? '';
+            $fileName = $prefix.(new \DateTime())->format('Y-m-d_Hi').'_import.csv';
             $filePath = $this->getTmpDir().'/'.$fileName;
             if(\is_file($filePath)){
                 unlink($filePath);
