@@ -278,6 +278,9 @@ class ImportProducts
         }
 
         $this->info('Importing: '.$filePath);
+        if($this->isDryRun()){
+            $this->info('### DRY-RUN ###');
+        }
 
         try{
             do_action('wwc-prod-csv-import\pre_import',$filePath,$this);
