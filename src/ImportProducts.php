@@ -76,6 +76,10 @@ class ImportProducts
      * @var string
      */
     private $downloadedFilenamePrefix;
+    /**
+     * @var string
+     */
+    private $csvDelimiter;
 	/**
 	 * @var boolean
 	 */
@@ -123,6 +127,9 @@ class ImportProducts
      *
      * [--downloaded-filename-prefix]
      * : The prefix to assign to the downloaded file, if <file> is a remote file
+     *
+     * [--delimiter]
+     * : The delimiter to use for parsing the csv
      *
      * [--unlock]
      * : Bypass lock file check
@@ -204,6 +211,8 @@ class ImportProducts
             $this->setForceUpdate(isset($assoc_args['force-update']) && $assoc_args['force-update']);
             $this->setDryRun(isset($assoc_args['dry-run']) && $assoc_args['dry-run']);
 
+            $this->csvDelimiter = isset($assoc_args['delimiter']) && \is_string($assoc_args['delimiter']) && $assoc_args['delimiter'] !== '' ? $assoc_args['delimiter'] : ';';
+
             //Startup
             $manifestFile = isset($assoc_args['manifest']) ? $assoc_args['manifest'] : null;
             if(isset($manifestFile)){
@@ -217,7 +226,6 @@ class ImportProducts
                 $this->setManifestFile($manifestFile);
                 $this->parseManifestFile();
             }
-
 
 
             if(isset($args[0])){
@@ -285,7 +293,7 @@ class ImportProducts
         try{
             do_action('wwc-prod-csv-import\pre_import',$filePath,$this);
             $csv = Reader::createFromPath($filePath,'r');
-            $csv->setDelimiter(';');
+            $csv->setDelimiter($this->csvDelimiter);
             $csv->setHeaderOffset(0);
 
             $records = $csv->getRecords();
