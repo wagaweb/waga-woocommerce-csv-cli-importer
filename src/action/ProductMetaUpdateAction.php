@@ -52,6 +52,11 @@ class ProductMetaUpdateAction extends AbstractAction
                 $r = 1; //update() returns false if the new value is the same as the old value, but it is not an error
             }
         }
+        //13/02/2024: BEGIN
+        if($r){
+            do_action('wwc-prod-csv-import\actions\product_meta_update\after_update',$metaKey,$data,$this->getProductId());
+        }
+        //13/02/2024: END
 
         if($this->isVerbose()){
             if(!$r){
